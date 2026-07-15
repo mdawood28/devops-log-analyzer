@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - DevOps Log Analyzer{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div class="stat-value">{{ total_files }}</div>
+            <div class="stat-label">Total Files</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                <i class="bi bi-list-check"></i>
+            </div>
+            <div class="stat-value">{{ total_entries }}</div>
+            <div class="stat-label">Total Entries</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
+                <i class="bi bi-info-circle-fill"></i>
+            </div>
+            <div class="stat-value">{{ level_counts.INFO }}</div>
+            <div class="stat-label">Info</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="stat-value">{{ level_counts.WARNING }}</div>
+            <div class="stat-label">Warning</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                <i class="bi bi-x-octagon-fill"></i>
+            </div>
+            <div class="stat-value">{{ level_counts.ERROR }}</div>
+            <div class="stat-label">Error</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(107, 114, 128, 0.1); color: #6b7280;">
+                <i class="bi bi-bug-fill"></i>
+            </div>
+            <div class="stat-value">{{ level_counts.DEBUG }}</div>
+            <div class="stat-label">Debug</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
+                <i class="bi bi-lightning-fill"></i>
+            </div>
+            <div class="stat-value">{{ level_counts.CRITICAL }}</div>
+            <div class="stat-label">Critical</div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-clock-history me-2"></i>Recent Uploads</h2>
+        <a href="{{ url_for('logs.index') }}" class="btn btn-sm btn-outline-primary">
+            View All <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+    <div class="panel-body p-0">
+        {% if recent_files %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Entries</th>
+                        <th>Size</th>
+                        <th>Uploaded</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in recent_files %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="file-icon"><i class="bi bi-file-text-fill"></i></span>
+                                <span class="fw-medium">{{ file.filename }}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-count">{{ file.entry_count }}</span></td>
+                        <td class="text-muted">{{ file.file_size_display }}</td>
+                        <td class="text-muted">{{ file.uploaded_at.strftime('%b %d, %Y %H:%M') }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('logs.detail', file_id=file.id) }}"
+                               class="btn btn-sm btn-ghost">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-cloud-upload"></i>
+            <h3>No logs uploaded yet</h3>
+            <p>Upload your first log file to start analyzing.</p>
+            <a href="{{ url_for('logs.upload') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> Upload Log File
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

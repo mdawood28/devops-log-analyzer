@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}{{ log_file.filename }} - DevOps Log Analyzer{% endblock %}
+{% block page_title %}{{ log_file.filename }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('logs.index') }}">Log Files</a></li>
+        <li class="breadcrumb-item active">{{ log_file.filename }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="panel h-100">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h2 class="panel-title"><i class="bi bi-info-circle me-2"></i>File Info</h2>
+                <form method="POST" action="{{ url_for('logs.delete', file_id=log_file.id) }}"
+                      onsubmit="return confirm('Delete this file and all its entries?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-ghost text-danger">
+                        <i class="bi bi-trash3 me-1"></i> Delete
+                    </button>
+                </form>
+            </div>
+            <div class="panel-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="text-muted small mb-1">Original Name</div>
+                        <div class="fw-medium">{{ log_file.original_filename }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small mb-1">File Size</div>
+                        <div class="fw-medium">{{ log_file.file_size_display }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small mb-1">Uploaded</div>
+                        <div class="fw-medium">{{ log_file.uploaded_at.strftime('%b %d, %Y at %H:%M:%S') }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small mb-1">Total Entries</div>
+                        <div class="fw-medium">{{ log_file.entry_count }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-pie-chart me-2"></i>Level Breakdown</h2>
+            </div>
+            <div class="panel-body">
+                <div class="row g-3 text-center">
+                    <div class="col">
+                        <div class="stat-mini">
+                            <span class="stat-mini-value text-info">{{ level_breakdown.INFO }}</span>
+                            <span class="stat-mini-label">INFO</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-mini">
+                            <span class="stat-mini-value text-warning">{{ level_breakdown.WARNING }}</span>
+                            <span class="stat-mini-label">WARN</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-mini">
+                            <span class="stat-mini-value text-danger">{{ level_breakdown.ERROR }}</span>
+                            <span class="stat-mini-label">ERROR</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-mini">
+                            <span class="stat-mini-value" style="color: var(--debug-color)">{{ level_breakdown.DEBUG }}</span>
+                            <span class="stat-mini-label">DEBUG</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-mini">
+                            <span class="stat-mini-value" style="color: var(--critical-color)">{{ level_breakdown.CRITICAL }}</span>
+                            <span class="stat-mini-label">CRIT</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% set total = level_breakdown.INFO + level_breakdown.WARNING + level_breakdown.ERROR + level_breakdown.DEBUG + level_breakdown.CRITICAL %}
+                {% if total > 0 %}
+                <div class="level-bar mt-4">
+                    {% if level_breakdown.INFO %}
+                    <div class="level-bar-segment bg-info" style="width: {{ (level_breakdown.INFO / total * 100)|round(1) }}%"
+                         title="INFO: {{ level_breakdown.INFO }}"></div>
+                    {% endif %}
+                    {% if level_breakdown.WARNING %}
+                    <div class="level-bar-segment bg-warning" style="width: {{ (level_breakdown.WARNING / total * 100)|round(1) }}%"
+                         title="WARNING: {{ level_breakdown.WARNING }}"></div>
+                    {% endif %}
+                    {% if level_breakdown.ERROR %}
+                    <div class="level-bar-segment bg-danger" style="width: {{ (level_breakdown.ERROR / total * 100)|round(1) }}%"
+                         title="ERROR: {{ level_breakdown.ERROR }}"></div>
+                    {% endif %}
+                    {% if level_breakdown.DEBUG %}
+                    <div class="level-bar-segment" style="width: {{ (level_breakdown.DEBUG / total * 100)|round(1) }}%; background: var(--debug-color)"
+                         title="DEBUG: {{ level_breakdown.DEBUG }}"></div>
+                    {% endif %}
+                    {% if level_breakdown.CRITICAL %}
+                    <div class="level-bar-segment" style="width: {{ (level_breakdown.CRITICAL / total * 100)|round(1) }}%; background: var(--critical-color)"
+                         title="CRITICAL: {{ level_breakdown.CRITICAL }}"></div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h2 class="panel-title"><i class="bi bi-terminal me-2"></i>Log Entries</h2>
+        <div class="d-flex flex-wrap gap-1">
+            <a href="{{ url_for('logs.detail', file_id=log_file.id) }}"
+               class="btn btn-sm {{ 'btn-primary' if not level_filter else 'btn-ghost' }}">All</a>
+            <a href="{{ url_for('logs.detail', file_id=log_file.id, level='INFO') }}"
+               class="btn btn-sm {{ 'btn-primary' if level_filter == 'INFO' else 'btn-ghost' }}">INFO</a>
+            <a href="{{ url_for('logs.detail', file_id=log_file.id, level='WARNING') }}"
+               class="btn btn-sm {{ 'btn-primary' if level_filter == 'WARNING' else 'btn-ghost' }}">WARNING</a>
+            <a href="{{ url_for('logs.detail', file_id=log_file.id, level='ERROR') }}"
+               class="btn btn-sm {{ 'btn-primary' if level_filter == 'ERROR' else 'btn-ghost' }}">ERROR</a>
+            <a href="{{ url_for('logs.detail', file_id=log_file.id, level='DEBUG') }}"
+               class="btn btn-sm {{ 'btn-primary' if level_filter == 'DEBUG' else 'btn-ghost' }}">DEBUG</a>
+            <a href="{{ url_for('logs.detail', file_id=log_file.id, level='CRITICAL') }}"
+               class="btn btn-sm {{ 'btn-primary' if level_filter == 'CRITICAL' else 'btn-ghost' }}">CRITICAL</a>
+        </div>
+    </div>
+    <div class="panel-body p-0">
+        {% if entries %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 log-entries-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;" class="ps-4">#</th>
+                        <th style="width: 180px;">Timestamp</th>
+                        <th style="width: 100px;">Level</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody class="font-monospace">
+                    {% for entry in entries %}
+                    <tr>
+                        <td class="text-muted ps-4">{{ entry.line_number }}</td>
+                        <td class="text-muted">{{ entry.timestamp or '—' }}</td>
+                        <td>
+                            {% if entry.level == 'CRITICAL' %}
+                                <span class="log-badge log-badge-critical">{{ entry.level }}</span>
+                            {% elif entry.level == 'ERROR' %}
+                                <span class="log-badge log-badge-error">{{ entry.level }}</span>
+                            {% elif entry.level == 'WARNING' %}
+                                <span class="log-badge log-badge-warning">{{ entry.level }}</span>
+                            {% elif entry.level == 'INFO' %}
+                                <span class="log-badge log-badge-info">{{ entry.level }}</span>
+                            {% else %}
+                                <span class="log-badge log-badge-debug">{{ entry.level }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-truncate" style="max-width: 500px;">{{ entry.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-funnel text-muted" style="font-size: 2rem;"></i>
+            <p class="text-muted mt-2 mb-0">No entries found for this filter.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

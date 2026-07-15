@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Upload Log - DevOps Log Analyzer{% endblock %}
+{% block page_title %}Upload{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-cloud-arrow-up me-2"></i>Upload Log File</h2>
+            </div>
+            <div class="panel-body">
+                <form method="POST" enctype="multipart/form-data" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="upload-zone mb-4" id="uploadZone">
+                        <div class="upload-zone-content">
+                            <i class="bi bi-cloud-arrow-up upload-zone-icon"></i>
+                            <p class="upload-zone-text">Drag and drop your log file here</p>
+                            <p class="upload-zone-hint">or click to browse</p>
+                            {{ form.file(class="form-control" + (" is-invalid" if form.file.errors else ""), id="fileInput") }}
+                            {% for error in form.file.errors %}
+                                <div class="invalid-feedback d-block mt-2">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="file-info d-none mb-4" id="fileInfo">
+                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-body-tertiary">
+                            <i class="bi bi-file-earmark-text fs-3 text-primary"></i>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-medium text-truncate" id="fileName"></div>
+                                <small class="text-muted" id="fileSize"></small>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-ghost text-danger" id="fileClear">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-upload me-2"></i> Upload & Analyze
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Accepted: .log, .txt files up to 10 MB
+                        </small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const zone = document.getElementById('uploadZone');
+    const input = document.getElementById('fileInput');
+    const info = document.getElementById('fileInfo');
+    const nameEl = document.getElementById('fileName');
+    const sizeEl = document.getElementById('fileSize');
+    const clearBtn = document.getElementById('fileClear');
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function showFile(file) {
+        nameEl.textContent = file.name;
+        sizeEl.textContent = formatSize(file.size);
+        info.classList.remove('d-none');
+        zone.classList.add('has-file');
+    }
+
+    function clearFile() {
+        input.value = '';
+        info.classList.add('d-none');
+        zone.classList.remove('has-file');
+    }
+
+    input.addEventListener('change', function() {
+        if (this.files.length) showFile(this.files[0]);
+    });
+
+    clearBtn.addEventListener('click', clearFile);
+
+    zone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+    });
+
+    zone.addEventListener('dragleave', function() {
+        zone.classList.remove('drag-over');
+    });
+
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) {
+            input.files = e.dataTransfer.files;
+            showFile(e.dataTransfer.files[0]);
+        }
+    });
+});
+</script>
+{% endblock %}
