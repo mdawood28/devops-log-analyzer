@@ -10,7 +10,6 @@ on:
       - main
 
 jobs:
-
   # =========================
   # TEST JOB
   # =========================
@@ -82,6 +81,14 @@ jobs:
           test -d tests
 
           echo "Project structure verified."
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check Gunicorn
+        run: gunicorn --version
 
       - name: 🔧 Verify Gunicorn Installation
         run: |
