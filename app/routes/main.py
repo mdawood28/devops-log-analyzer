@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 
-from app.models import LogFile, LogEntry, db
+from app.models import LogFile, LogEntry
 
 main_bp = Blueprint("main", __name__)
 

@@ -1,7 +1,6 @@
 import io
 
 from app.models import LogFile
-from app import db
 
 
 def test_dashboard(client):
