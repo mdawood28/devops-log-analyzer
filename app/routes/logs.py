@@ -93,9 +93,7 @@ def index():
     if form.filename.data:
         query = query.filter(LogFile.filename.ilike(f"%{form.filename.data}%"))
     if form.level.data:
-        query = query.filter(
-            getattr(LogFile, f"{form.level.data.lower()}_count") > 0
-        )
+        query = query.filter(getattr(LogFile, f"{form.level.data.lower()}_count") > 0)
     if form.date.data:
         query = query.filter(db.func.date(LogFile.uploaded_at) == form.date.data)
 

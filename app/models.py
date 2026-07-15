@@ -39,9 +39,7 @@ class LogEntry(db.Model):
     __tablename__ = "log_entries"
 
     id = db.Column(db.Integer, primary_key=True)
-    log_file_id = db.Column(
-        db.Integer, db.ForeignKey("log_files.id"), nullable=False
-    )
+    log_file_id = db.Column(db.Integer, db.ForeignKey("log_files.id"), nullable=False)
     timestamp = db.Column(db.String(50))
     level = db.Column(db.String(10), nullable=False)
     message = db.Column(db.Text, nullable=False)

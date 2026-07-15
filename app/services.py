@@ -1,6 +1,5 @@
 import re
 
-
 LOG_PATTERNS = [
     re.compile(
         r"(?P<timestamp>\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}[.,]?\d*)\s+"
@@ -12,8 +11,7 @@ LOG_PATTERNS = [
         r"(?P<message>.*)"
     ),
     re.compile(
-        r"(?P<level>DEBUG|INFO|WARNING|ERROR|CRITICAL)\s*[:\-]\s*"
-        r"(?P<message>.*)"
+        r"(?P<level>DEBUG|INFO|WARNING|ERROR|CRITICAL)\s*[:\-]\s*" r"(?P<message>.*)"
     ),
 ]
 
